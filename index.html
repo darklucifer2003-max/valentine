@@ -6,28 +6,30 @@
 <title>Be My Valentine</title>
 <style>
 html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;}
-body{background:url('assets/bg.jpg') center/cover no-repeat;}
-.overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);}
+.bg{position:fixed;inset:0;background-size:cover;background-position:center;transition:opacity 1s ease;z-index:-2;}
+#bg2{opacity:0;}
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:-1;}
 .note{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;padding:10px 18px;border-radius:20px;z-index:50;}
 .page{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:140px;color:#fff;text-align:center;}
-h1{font-size:2.1rem;margin-bottom:26px;}
-.buttons{display:flex;gap:26px;transform:translateX(-40px);}
+#page2{background:#7a0019;justify-content:center;padding-bottom:0;}
+h1{font-size:2.2rem;margin:0 20px 26px;}
+.buttons{display:flex;gap:20px;transform:translateX(-40px);}
 .btn{padding:14px 30px;border-radius:40px;font-size:17px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
 .yes{background:#2ecc71;}
 .no{background:#e74c3c;position:fixed;z-index:40;}
-.emoji,.photo{position:fixed;pointer-events:none;}
-.emoji{font-size:30px;opacity:.8;animation:floatUp 6s linear forwards;}
-.photo{width:95px;height:95px;border-radius:18px;object-fit:cover;animation:floatUp 8s linear forwards;box-shadow:0 8px 20px rgba(0,0,0,.4);}
-.confetti{position:fixed;top:-20px;width:8px;height:8px;animation:fallDown 5s linear forwards;}
-@keyframes floatUp{from{transform:translateY(110vh);}to{transform:translateY(-20vh);opacity:0;}}
-@keyframes fallDown{from{transform:translateY(-10vh);}to{transform:translateY(120vh);opacity:0;}}
-@media(max-width:480px){.btn{padding:12px 24px;font-size:16px;}}
 </style>
 </head>
 <body>
+
+<div id="bg1" class="bg"></div>
+<div id="bg2" class="bg"></div>
 <div class="overlay"></div>
+
 <div class="note">🎵 Tap anywhere to play music</div>
-<audio id="music" loop><source src="assets/music.mp4"></audio>
+
+<audio id="music" loop>
+  <source src="assets/music.mpeg" type="audio/mpeg">
+</audio>
 
 <div class="page" id="page1">
   <h1>Hey Love, Will You Be My Valentine? 💞</h1>
@@ -38,77 +40,65 @@ h1{font-size:2.1rem;margin-bottom:26px;}
 
 <button class="btn no" id="noBtn">No 😢</button>
 
-<div class="page" id="page2" style="display:none;background:linear-gradient(135deg,#ff758c,#ff7eb3);">
+<div class="page" id="page2" style="display:none;">
   <h1>Thank you for being my Valentine ❤️</h1>
 </div>
 
 <script>
-const music=document.getElementById("music");
-document.body.addEventListener("click",()=>music.play().catch(()=>{}),{once:true});
+const images = ["assets/bg/bg1.jpg", "assets/bg/bg2.jpg", "assets/bg/bg3.jpg", "assets/bg/bg4.jpg", "assets/bg/bg5.jpg"];
+let current = 0;
+let showingFirst = true;
 
-const noBtn=document.getElementById("noBtn");
-const yesBtn=document.getElementById("yesBtn");
-const bw=noBtn.offsetWidth, bh=noBtn.offsetHeight;
-noBtn.style.width=bw+"px"; noBtn.style.height=bh+"px";
+const bg1 = document.getElementById("bg1");
+const bg2 = document.getElementById("bg2");
+bg1.style.backgroundImage = `url(${images[0]})`;
 
-function overlapYes(){
-  const a=noBtn.getBoundingClientRect();
-  const b=yesBtn.getBoundingClientRect();
-  return !(a.right<b.left||a.left>b.right||a.bottom<b.top||a.top>b.bottom);
+const slideInterval = setInterval(() => {
+  let next;
+  do {
+    next = Math.floor(Math.random() * images.length);
+  } while (next === current);
+  current = next;
+
+  const show = showingFirst ? bg2 : bg1;
+  const hide = showingFirst ? bg1 : bg2;
+
+  show.style.backgroundImage = `url(${images[current]})`;
+  show.style.opacity = 1;
+  hide.style.opacity = 0;
+
+  showingFirst = !showingFirst;
+}, 2000);
+
+const music = document.getElementById("music");
+document.body.addEventListener("click", () => music.play().catch(()=>{}), {once:true});
+
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+
+function moveNo() {
+  const pad = 20;
+  noBtn.style.left = (Math.random() * (innerWidth - noBtn.offsetWidth - pad*2) + pad) + "px";
+  noBtn.style.top  = (Math.random() * (innerHeight - noBtn.offsetHeight - pad*2) + pad) + "px";
 }
 
-function moveNo(){
-  const pad=20; let tries=0;
-  do{
-    noBtn.style.left=(Math.random()*(innerWidth-bw-pad*2)+pad)+"px";
-    noBtn.style.top=(Math.random()*(innerHeight-bh-pad*2)+pad)+"px";
-    tries++;
-  }while(overlapYes() && tries<80);
-}
+setTimeout(() => {
+  const r = yesBtn.getBoundingClientRect();
+  noBtn.style.left = (r.right + 20) + "px";
+  noBtn.style.top  = r.top + "px";
+}, 100);
 
-setTimeout(()=>{
-  const r=yesBtn.getBoundingClientRect();
-  noBtn.style.left=(r.right+28)+"px";
-  noBtn.style.top=r.top+"px";
-},60);
+setInterval(moveNo, 1500);
 
-noBtn.onclick=e=>{e.preventDefault();moveNo();};
-setInterval(moveNo,1500);
-
-setInterval(()=>{
-  const e=document.createElement("div");
-  e.className="emoji";
-  e.innerText=["❤️","😍","🥰","😘"][Math.floor(Math.random()*4)];
-  e.style.left=Math.random()*90+"vw";
-  document.body.appendChild(e);
-  setTimeout(()=>e.remove(),6000);
-},500);
-
-const photos=['assets/photos/p1.jpg', 'assets/photos/p2.jpg', 'assets/photos/p3.jpg', 'assets/photos/p4.jpg', 'assets/photos/p5.jpg'];
-setInterval(()=>{
-  const img=document.createElement("img");
-  img.src=photos[Math.floor(Math.random()*photos.length)];
-  img.className="photo";
-  img.style.left=(Math.random()<.5?5+Math.random()*15:80+Math.random()*15)+"vw";
-  document.body.appendChild(img);
-  setTimeout(()=>img.remove(),8000);
-},2600);
-
-yesBtn.onclick=()=>{
-  page1.style.display="none";
-  page2.style.display="flex";
-  noBtn.style.display="none";
-  setInterval(()=>{
-    const c=document.createElement("div");
-    c.className="confetti";
-    c.style.left=Math.random()*100+"vw";
-    c.style.background=["#ff4d6d","#ffd166","#4cc9f0","#06d6a0","#c77dff"][Math.floor(Math.random()*5)];
-    const s=6+Math.random()*6;
-    c.style.width=s+"px"; c.style.height=s+"px";
-    document.body.appendChild(c);
-    setTimeout(()=>c.remove(),5000);
-  },120);
+yesBtn.onclick = () => {
+  clearInterval(slideInterval);
+  page1.style.display = "none";
+  page2.style.display = "flex";
+  noBtn.style.display = "none";
+  bg1.style.opacity = 0;
+  bg2.style.opacity = 0;
 };
 </script>
+
 </body>
 </html>
