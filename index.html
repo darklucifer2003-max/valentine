@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,18 +6,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Be My Valentine</title>
 <style>
-html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;}
-.bg{position:fixed;inset:0;background-size:cover;background-position:center;transition:opacity 1s ease;z-index:-2;}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:Segoe UI,sans-serif;}
+.bg{position:fixed;inset:0;background-size:cover;background-position:center;transition:opacity 1s;z-index:-3;}
 #bg2{opacity:0;}
-.overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:-1;}
-.note{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;padding:10px 18px;border-radius:20px;z-index:50;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:-2;}
+.note{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;padding:10px 18px;border-radius:20px;z-index:50;}
 .page{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:140px;color:#fff;text-align:center;}
 #page2{background:#7a0019;justify-content:center;padding-bottom:0;}
-h1{font-size:2.2rem;margin:0 20px 26px;}
-.buttons{display:flex;gap:20px;transform:translateX(-40px);}
-.btn{padding:14px 30px;border-radius:40px;font-size:17px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
+h1{font-size:2.1rem;margin:0 20px 26px;}
+.buttons{display:flex;gap:18px;transform:translateX(-40px);}
+.btn{padding:14px 28px;border-radius:40px;font-size:17px;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;}
 .yes{background:#2ecc71;}
 .no{background:#e74c3c;position:fixed;z-index:40;}
+
+.float-emoji{position:fixed;bottom:-40px;font-size:30px;opacity:.85;animation:floatUp 6s linear forwards;z-index:20;}
+.float-photo{position:fixed;bottom:-80px;width:90px;height:90px;border-radius:16px;object-fit:cover;opacity:.8;animation:floatUp 8s linear forwards;z-index:15;}
+
+.confetti{position:fixed;top:-20px;width:8px;height:8px;animation:fall 4s linear forwards;z-index:30;}
+
+@keyframes floatUp{to{transform:translateY(-120vh);opacity:0;}}
+@keyframes fall{to{transform:translateY(120vh);opacity:0;}}
 </style>
 </head>
 <body>
@@ -45,58 +54,84 @@ h1{font-size:2.2rem;margin:0 20px 26px;}
 </div>
 
 <script>
-const images = ["assets/bg/bg1.jpg", "assets/bg/bg2.jpg", "assets/bg/bg3.jpg", "assets/bg/bg4.jpg", "assets/bg/bg5.jpg"];
-let current = 0;
-let showingFirst = true;
+const bgImages = ["assets/bg/bg1.jpg", "assets/bg/bg2.jpg", "assets/bg/bg3.jpg", "assets/bg/bg4.jpg", "assets/bg/bg5.jpg"];
+const photoImages = ["assets/photos/p1.jpg", "assets/photos/p2.jpg", "assets/photos/p3.jpg", "assets/photos/p4.jpg", "assets/photos/p5.jpg"];
 
-const bg1 = document.getElementById("bg1");
-const bg2 = document.getElementById("bg2");
-bg1.style.backgroundImage = `url(${images[0]})`;
+// Slideshow
+let current=0, showFirst=true;
+const bg1=document.getElementById("bg1");
+const bg2=document.getElementById("bg2");
+bg1.style.backgroundImage = "url("+bgImages[0]+")";
 
-const slideInterval = setInterval(() => {
+const slideInterval=setInterval(()=>{
   let next;
-  do {
-    next = Math.floor(Math.random() * images.length);
-  } while (next === current);
-  current = next;
+  do { next=Math.floor(Math.random()*bgImages.length); } while(next===current);
+  current=next;
+  const show=showFirst?bg2:bg1;
+  const hide=showFirst?bg1:bg2;
+  show.style.backgroundImage="url("+bgImages[current]+")";
+  show.style.opacity=1;
+  hide.style.opacity=0;
+  showFirst=!showFirst;
+},2000);
 
-  const show = showingFirst ? bg2 : bg1;
-  const hide = showingFirst ? bg1 : bg2;
+// Music
+const music=document.getElementById("music");
+document.body.addEventListener("click",()=>music.play().catch(()=>{}),{once:true});
 
-  show.style.backgroundImage = `url(${images[current]})`;
-  show.style.opacity = 1;
-  hide.style.opacity = 0;
-
-  showingFirst = !showingFirst;
-}, 2000);
-
-const music = document.getElementById("music");
-document.body.addEventListener("click", () => music.play().catch(()=>{}), {once:true});
-
-const noBtn = document.getElementById("noBtn");
-const yesBtn = document.getElementById("yesBtn");
-
-function moveNo() {
-  const pad = 20;
-  noBtn.style.left = (Math.random() * (innerWidth - noBtn.offsetWidth - pad*2) + pad) + "px";
-  noBtn.style.top  = (Math.random() * (innerHeight - noBtn.offsetHeight - pad*2) + pad) + "px";
+// NO button
+const noBtn=document.getElementById("noBtn");
+const yesBtn=document.getElementById("yesBtn");
+function moveNo(){
+  const pad=20;
+  noBtn.style.left=Math.random()*(innerWidth-noBtn.offsetWidth-pad*2)+pad+"px";
+  noBtn.style.top=Math.random()*(innerHeight-noBtn.offsetHeight-pad*2)+pad+"px";
 }
+setTimeout(()=>{
+  const r=yesBtn.getBoundingClientRect();
+  noBtn.style.left=r.right+20+"px";
+  noBtn.style.top=r.top+"px";
+},100);
+setInterval(moveNo,1500);
 
-setTimeout(() => {
-  const r = yesBtn.getBoundingClientRect();
-  noBtn.style.left = (r.right + 20) + "px";
-  noBtn.style.top  = r.top + "px";
-}, 100);
+// EMOJIS (ALL specified)
+const emojis=["❤️","😍","🥰","😘"];
+setInterval(()=>{
+  const e=document.createElement("div");
+  e.className="float-emoji";
+  e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+  e.style.left=Math.random()*90+"vw";
+  document.body.appendChild(e);
+  setTimeout(()=>e.remove(),6000);
+},800);
 
-setInterval(moveNo, 1500);
+// PHOTOS
+setInterval(()=>{
+  const img=document.createElement("img");
+  img.src=photoImages[Math.floor(Math.random()*photoImages.length)];
+  img.className="float-photo";
+  img.style.left=(Math.random()<0.5?5+Math.random()*15:80+Math.random()*15)+"vw";
+  document.body.appendChild(img);
+  setTimeout(()=>img.remove(),8000);
+},2500);
 
-yesBtn.onclick = () => {
+// YES click
+yesBtn.onclick=()=>{
   clearInterval(slideInterval);
-  page1.style.display = "none";
-  page2.style.display = "flex";
-  noBtn.style.display = "none";
-  bg1.style.opacity = 0;
-  bg2.style.opacity = 0;
+  page1.style.display="none";
+  page2.style.display="flex";
+  noBtn.style.display="none";
+  bg1.style.opacity=0; bg2.style.opacity=0;
+
+  // SQUARE CONFETTI
+  setInterval(()=>{
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=["#ff4d6d","#ffd166","#ffffff","#ffb703"][Math.floor(Math.random()*4)];
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),4000);
+  },150);
 };
 </script>
 
